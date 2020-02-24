@@ -20,7 +20,7 @@ def topology(args):
                    position='70,30,0')
     ap1 = net.addAccessPoint('ap1', ssid='new-ssid', mode='g', channel='1',
                              failMode="standalone", position='50,50,0')
-    h1 = net.addHost('h1', ip='10.0.0.3/8', position='10,30,0')
+    h1 = net.addHost('h1', ip='10.0.0.3/8')
 
     net.setPropagationModel(model="logDistance", exp=4.5)
 
