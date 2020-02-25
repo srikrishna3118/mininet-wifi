@@ -65,7 +65,7 @@ class Mininet_wifi(Mininet):
                  autoSetPositions=False, configWiFiDirect=False,
                  config4addr=False, noise_th=-91, cca_th=-90,
                  disable_tcp_checksum=False, ifb=False, bridge=False, plot=False,
-                 Plot3D=False, docker=False, container='mininet-wifi', ssh_user='alpha',
+                 plot3d=False, docker=False, container='mininet-wifi', ssh_user='alpha',
                  set_socket_ip=None, set_socket_port=12345, iot_module='mac802154_hwsim'):
         """Create Mininet object.
            topo: Topo (topology) object or None
@@ -147,7 +147,7 @@ class Mininet_wifi(Mininet):
         self.ifb = ifb   # Support to Intermediate Functional Block (IFB) Devices
         self.bridge = bridge
         self.init_plot = plot
-        self.init_Plot3D = Plot3D
+        self.init_Plot3D = plot3d
         self.cca_th = cca_th
         self.configWiFiDirect = configWiFiDirect
         self.config4addr = config4addr
@@ -810,7 +810,7 @@ class Mininet_wifi(Mininet):
                 max_z = 0
                 if self.init_Plot3D:
                     max_z = len(self.stations) * 100
-                self.PlotGraph(max_x=(len(self.stations) * 100),
+                self.plotGraph(max_x=(len(self.stations) * 100),
                                max_y=(len(self.stations) * 100),
                                max_z=max_z)
         else:
@@ -1482,7 +1482,7 @@ class Mininet_wifi(Mininet):
                       max_x=self.max_x, max_y=self.max_y, max_z=self.max_z,
                       nodes=nodes, links=self.links)
             if not issubclass(self.plot, Plot3D):
-                self.plot.pause()
+                PlotGraph.pause()
         except:
             info('Something went wrong with the GUI.\n')
             self.draw = False
@@ -1648,7 +1648,7 @@ class Mininet_wifi(Mininet):
                 node.wintfs[0].range = node.getRange(node.wintfs[0])
                 if self.draw:
                     if not issubclass(self.plot, Plot3D):
-                        self.plot.updateCircleRadius(node)
+                        self.plot.update_circle_radius(node)
                     self.plot.update(node)
             self.plot.pause()
             sleep(0.5)
