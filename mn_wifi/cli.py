@@ -48,7 +48,7 @@ class CLI_wifi(CLI):
             if len(args) == 3 and args[2] == 'down':
                 Plot2D.hide_line(nodes[0], nodes[1])
             elif len(args) == 3 and args[2] == 'up':
-                Plot2D.show_lne(nodes[0], nodes[1])
+                Plot2D.show_line(nodes[0], nodes[1])
 
     def do_dpctl(self, line):
         """Run dpctl (or ovs-ofctl) command on all switches.
