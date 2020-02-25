@@ -578,8 +578,8 @@ class _4address(IntfWireless):
         intf1 = None
         intf2 = None
 
-        ap = node1 # ap
-        cl = node2 # client
+        ap = node1  # ap
+        cl = node2  # client
         cl_intfName = '%s.wds' % cl.name
 
         if not hasattr(node1, 'position'):
@@ -689,14 +689,14 @@ class WirelessLinkAP(object):
         params = dict( params ) if params else {}
 
         if port is not None:
-            params[ 'port' ] = port
+            params['port'] = port
 
         params['port'] = node.newPort()
         if not intfName:
             ifacename = 'wlan'
             intfName = self.wlanName(node, ifacename, params['port'])
         intf1 = cls(name=intfName, node=node,
-                    link=self, mac = addr, ** params)
+                    link=self, mac=addr, **params)
 
         intf2 = 'wifi'
         # All we are is dust in the wind, and our two interfaces

@@ -11,7 +11,7 @@ from numpy.random import rand
 from mininet.log import debug, info
 from mn_wifi.link import wirelessLink, Association, mesh, adhoc, ITSLink
 from mn_wifi.associationControl import associationControl
-from mn_wifi.plot import plot2d, plot3d, plotGraph
+from mn_wifi.plot import PlotGraph
 from mn_wifi.wmediumdConnector import w_cst, wmediumd_mode
 
 
@@ -277,7 +277,7 @@ class model(mobility):
     def models(self, stations=None, aps=None, stat_nodes=None, mob_nodes=None,
                ac_method=None, draw=False, seed=1, model='RandomWalk',
                mnNodes=None, min_wt=5, max_wt=5, min_x=0, min_y=0,
-               max_x=100, max_y=100, conn=None, min_v=1, max_v=10,
+               max_x=100, max_y=100, links=None, min_v=1, max_v=10,
                **kwargs):
         "Used when a mobility model is set"
         np.random.seed(seed)
@@ -302,10 +302,9 @@ class model(mobility):
         try:
             if draw:
                 nodes = mob_nodes + stat_nodes
-                plotGraph(min_x=min_x, min_y=min_y, min_z=0,
+                PlotGraph(min_x=min_x, min_y=min_y, min_z=0,
                           max_x=max_x, max_y=max_y, max_z=0,
-                          nodes=nodes, conn=conn)
-                plot2d.pause()
+                          nodes=nodes, links=links)
         except:
             info('Warning: running without GUI.\n')
 
@@ -358,9 +357,9 @@ class model(mobility):
                       0.0
                 mobility.set_pos(node, pos)
                 if draw:
-                    plot2d.update(node)
+                    node.update_2d()
             if draw:
-                plot2d.pause()
+                PlotGraph.pause()
             else:
                 sleep(0.5)
             while mobility.pause_simulation:
@@ -391,7 +390,6 @@ class tracked(mobility):
         mobility.aps = aps
         mobility.mobileNodes = mob_nodes
         nodes = stations + aps
-        plot = plot2d
 
         if mnNodes:
             stat_nodes += mnNodes
@@ -402,19 +400,23 @@ class tracked(mobility):
         try:
             if draw:
                 kwargs['nodes'] = stat_nodes + mob_nodes
-                plotGraph(**kwargs)
-                if kwargs['max_z'] != 0:
-                    plot = plot3d
+                PlotGraph(**kwargs)
         except:
             info('Warning: running without GUI.\n')
 
         for node in nodes:
             if hasattr(node, 'coord'):
                 self.set_coordinates(node)
-        self.run(mob_nodes, plot, draw, **kwargs)
+        self.run(mob_nodes, draw, **kwargs)
 
-    def run(self, mob_nodes, plot, draw, init_time=0, reverse=False,
+    def run(self, mob_nodes, draw, init_time=0, reverse=False,
             repetitions=1, end_time=10, **kwargs):
+
+        if draw:
+            if PlotGraph.plot3d:
+                graph_dim = 'update_3d'
+            else:
+                graph_dim = 'update_2d'
 
         for rep in range(repetitions):
             cont = True
@@ -451,10 +453,11 @@ class tracked(mobility):
                                 mobility.set_pos(node, pos)
                                 node.time += 0.1
                             if draw:
-                                plot.update(node)
-                                if kwargs['max_z'] == 0:
-                                    plot2d.updateCircleRadius(node)
-                        plot.pause()
+                                graph_update = getattr(node, graph_dim)
+                                graph_update()
+                                if not PlotGraph.plot3d:
+                                    node.set_circle_radius()
+                        PlotGraph.pause()
                         i += 0.1
                 while mobility.pause_simulation:
                     pass
@@ -593,6 +596,7 @@ P = lambda ALPHA, MIN, MAX, SAMPLES: ((MAX ** (ALPHA + 1.) - 1.) * \
 
 # define an Exponential Distribution
 E = lambda SCALE, SAMPLES: -SCALE * np.log(rand(*SAMPLES.shape))
+
 
 # *************** Palm state probability **********************
 def pause_probability_init(pause_low, pause_high, speed_low,

@@ -38,7 +38,7 @@ from mn_wifi.clean import Cleanup as cleanup_mnwifi
 from mn_wifi.energy import Energy
 from mn_wifi.telemetry import parseData, telemetry as run_telemetry
 from mn_wifi.mobility import tracked as trackedMob, model as mobModel, mobility as mob
-from mn_wifi.plot import plot2d, plot3d, plotGraph
+from mn_wifi.plot import Plot2D, Plot3D, PlotGraph
 from mn_wifi.module import module
 from mn_wifi.propagationModels import propagationModel
 from mn_wifi.vanet import vanet
@@ -65,7 +65,7 @@ class Mininet_wifi(Mininet):
                  autoSetPositions=False, configWiFiDirect=False,
                  config4addr=False, noise_th=-91, cca_th=-90,
                  disable_tcp_checksum=False, ifb=False, bridge=False, plot=False,
-                 plot3d=False, docker=False, container='mininet-wifi', ssh_user='alpha',
+                 Plot3D=False, docker=False, container='mininet-wifi', ssh_user='alpha',
                  set_socket_ip=None, set_socket_port=12345, iot_module='mac802154_hwsim'):
         """Create Mininet object.
            topo: Topo (topology) object or None
@@ -147,7 +147,7 @@ class Mininet_wifi(Mininet):
         self.ifb = ifb   # Support to Intermediate Functional Block (IFB) Devices
         self.bridge = bridge
         self.init_plot = plot
-        self.init_plot3d = plot3d
+        self.init_Plot3D = Plot3D
         self.cca_th = cca_th
         self.configWiFiDirect = configWiFiDirect
         self.config4addr = config4addr
@@ -155,7 +155,7 @@ class Mininet_wifi(Mininet):
         self.noise_th = noise_th
         self.mob_param = dict()
         self.disable_tcp_checksum = disable_tcp_checksum
-        self.plot = plot2d
+        self.plot = Plot2D
         self.roads = roads
         self.iot_module = iot_module
         self.seed = 1
@@ -167,7 +167,6 @@ class Mininet_wifi(Mininet):
         self.max_x = 100
         self.max_y = 100
         self.max_z = 0
-        self.conn = {}
         self.wlinks = []
         Mininet_wifi.init()  # Initialize Mininet-WiFi if necessary
 
@@ -628,10 +627,6 @@ class Mininet_wifi(Mininet):
         node2 = node2 if not isinstance(node2, string_types) else self[node2]
         options = dict(params)
 
-        self.conn.setdefault('src', [])
-        self.conn.setdefault('dst', [])
-        self.conn.setdefault('ls', [])
-
         cls = self.link if cls is None else cls
 
         modes = [mesh, physicalMesh, adhoc, ITSLink,
@@ -643,11 +638,6 @@ class Mininet_wifi(Mininet):
             self.links.append(link)
             return link
         elif cls == _4address:
-            if hasattr(node1, 'position') and hasattr(node2, 'position'):
-                self.conn['src'].append(node1)
-                self.conn['dst'].append(node2)
-                self.conn['ls'].append('--')
-
             if node1 not in self.aps:
                 self.aps.append(node1)
             elif node2 not in self.aps:
@@ -670,10 +660,6 @@ class Mininet_wifi(Mininet):
             else:
                 self.infra_tc(node1, node2, port1, port2, cls, **params)
         else:
-            if hasattr(node1, 'position') and hasattr(node2, 'position'):
-                self.conn['src'].append(node1)
-                self.conn['dst'].append(node2)
-                self.conn['ls'].append('-')
             # Port is optional
             if port1 is not None:
                 options.setdefault('port1', port1)
@@ -820,11 +806,11 @@ class Mininet_wifi(Mininet):
         "Build mininet-wifi."
         if self.topo:
             self.buildFromWirelessTopo(self.topo)
-            if self.init_plot or self.init_plot3d:
+            if self.init_plot or self.init_Plot3D:
                 max_z = 0
-                if self.init_plot3d:
+                if self.init_Plot3D:
                     max_z = len(self.stations) * 100
-                self.plotGraph(max_x=(len(self.stations) * 100),
+                self.PlotGraph(max_x=(len(self.stations) * 100),
                                max_y=(len(self.stations) * 100),
                                max_z=max_z)
         else:
@@ -1484,7 +1470,7 @@ class Mininet_wifi(Mininet):
         for key in kwargs:
             setattr(self, key, kwargs[key])
         if 'max_z' in kwargs and kwargs['max_z'] != 0:
-            self.plot = plot3d
+            self.plot = Plot3D
         cleanup_mnwifi.plot = self.plot
 
     def checkDimension(self, nodes):
@@ -1492,10 +1478,10 @@ class Mininet_wifi(Mininet):
             for node in nodes:
                 if hasattr(node, 'coord'):
                     node.position = node.coord[0].split(',')
-            plotGraph(min_x=self.min_x, min_y=self.min_y, min_z=self.min_z,
+            PlotGraph(min_x=self.min_x, min_y=self.min_y, min_z=self.min_z,
                       max_x=self.max_x, max_y=self.max_y, max_z=self.max_z,
-                      nodes=nodes, conn=self.conn)
-            if not issubclass(self.plot, plot3d):
+                      nodes=nodes, links=self.links)
+            if not issubclass(self.plot, Plot3D):
                 self.plot.pause()
         except:
             info('Something went wrong with the GUI.\n')
@@ -1536,7 +1522,7 @@ class Mininet_wifi(Mininet):
         float_args = ['min_x', 'min_y', 'min_z',
                       'max_x', 'max_y', 'max_z',
                       'min_v', 'max_v', 'min_wt', 'max_wt']
-        args = ['stations', 'cars', 'aps', 'draw', 'conn', 'seed']
+        args = ['stations', 'cars', 'aps', 'draw', 'seed']
         args += float_args
         for arg in args:
             if arg != 'min_wt' and arg != 'max_wt':
@@ -1552,6 +1538,7 @@ class Mininet_wifi(Mininet):
 
         if self.roads:
             self.mob_param.setdefault('roads', self.roads)
+        self.mob_param.setdefault('links', self.links)
 
         self.mob_param.setdefault('ppm', propagationModel.model)
 
@@ -1660,7 +1647,7 @@ class Mininet_wifi(Mininet):
             for node in nodes:
                 node.wintfs[0].range = node.getRange(node.wintfs[0])
                 if self.draw:
-                    if not issubclass(self.plot, plot3d):
+                    if not issubclass(self.plot, Plot3D):
                         self.plot.updateCircleRadius(node)
                     self.plot.update(node)
             self.plot.pause()
