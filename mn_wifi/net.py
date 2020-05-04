@@ -1249,8 +1249,7 @@ class Mininet_wifi(Mininet, Mininet_IoT):
             for sta in self.stations:
                 if sta in self.aps:
                     self.stations.remove(sta)
-            nodes = self.stations + self.aps + self.cars
-            self.config_antenna(nodes)
+            self.config_antenna()
         self.wmediumd_started = True
 
     def addSensors(self, sensors):
