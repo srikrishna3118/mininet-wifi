@@ -300,9 +300,9 @@ class Mininet_wifi(Mininet, Mininet_IoT):
                 intf.ipLink('up')
                 if isinstance(node, AP):
                     self.configMasterIntf(node, intf.id)
-                    intf = node.wintfs[intf.id]
                     if not intf.mac:
                         intf.mac = intf.getMAC()
+                    intf = node.wintfs[intf.id]
                     HostapdConfig(intf)
 
     def addStation(self, name, cls=None, **params):
@@ -1266,8 +1266,8 @@ class Mininet_wifi(Mininet, Mininet_IoT):
                     if 'model' not in node.params:
                         intf.setDefaultTxPower()
 
-    @staticmethod
-    def config_antenna(nodes):
+    def config_antenna(self):
+        nodes = self.stations + self.cars + self.aps
         for node in nodes:
             for intf in node.wintfs.values():
                 if not isinstance(intf, _4addrAP) and not isinstance(intf, PhysicalWifiDirectLink):
@@ -1328,7 +1328,7 @@ class Mininet_wifi(Mininet, Mininet_IoT):
 
         self.config_range()
         if not self.config4addr and not self.configWiFiDirect:
-            self.config_antenna(nodes)
+            self.config_antenna()
 
     @staticmethod
     def wmediumd_workaround(node, value=1):

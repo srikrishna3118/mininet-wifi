@@ -217,8 +217,6 @@ class Mac80211Hwsim(object):
         self.logging_to_file("%s" % log_filename)
 
         try:
-            debug("\n*** Configuring interfaces with appropriated network"
-                  "-namespaces...\n")
             for wlan in range(len(node.params['wlan'])):
                 if isinstance(node, AP) and not node.inNamespace:
                     self.rename(node, wlan_list[0], node.params['wlan'][wlan])
