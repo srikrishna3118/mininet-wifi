@@ -41,7 +41,7 @@ class IntfWireless(Intf):
         if self.name == 'lo':
             self.ip = '127.0.0.1'
 
-        if port == 0 and len(self.node.ports) == 0:
+        if port == 0:
             port = None
 
         node.addWIntf(self, port=port)
