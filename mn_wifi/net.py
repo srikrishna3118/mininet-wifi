@@ -302,6 +302,7 @@ class Mininet_wifi(Mininet, Mininet_IoT):
                     self.configMasterIntf(node, intf.id)
                     if not intf.mac:
                         intf.mac = intf.getMAC()
+                    intf.setMAC(intf.mac)
                     intf = node.wintfs[intf.id]
                     HostapdConfig(intf)
 
@@ -1317,13 +1318,13 @@ class Mininet_wifi(Mininet, Mininet_IoT):
                 intf = ap.wintfs[wlan]
                 if not intf.mac:
                     intf.mac = intf.getMAC()
+                intf.setMAC(intf.mac)
 
         if self.link == wmediumd:
             self.configWmediumd()
 
         for ap in self.aps:
-            for wlan in range(len(ap.params['wlan'])):
-                intf = ap.wintfs[wlan]
+            for intf in ap.wintfs.values():
                 HostapdConfig(intf)
 
         self.config_range()

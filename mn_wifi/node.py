@@ -325,7 +325,6 @@ class Node_wifi(Node):
            moveIntfFn: function to move interface (optional)"""
         if port is None:
             port = self.newPort()
-
         self.intfs[port] = intf
         self.ports[intf] = port
         self.nameToIntf[intf.name] = intf
