@@ -535,7 +535,6 @@ class Mininet_wifi(Mininet, Mininet_IoT):
     def infra_tc(self, node1, node2, port1=None, port2=None,
                  cls=None, **params):
         intf, ap_intf = self.get_intf(node1, node2, port1, port2)
-
         do_association = True
         if hasattr(intf.node, 'position') and hasattr(ap_intf.node, 'position'):
             do_association = self.do_association(intf, ap_intf)
@@ -1395,6 +1394,9 @@ class Mininet_wifi(Mininet, Mininet_IoT):
                 intf = node.params['wlan'][wlan]
                 link = TCLinkWireless(node, intfName=intf, port=wlan)
                 self.links.append(link)
+                # lets set ip/mac to intfs
+                node.intfs[wlan].ip = node.wintfs[wlan].ip
+                node.intfs[wlan].mac = node.wintfs[wlan].mac
 
     @staticmethod
     def stop_simulation():
