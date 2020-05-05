@@ -129,9 +129,6 @@ class IntfWireless(Intf):
         self.node.wmIfaces.append(self.wmIface)
         # register interface
         w_server.register_interface(self.mac)
-        self.setTxPower(self.txpower)
-        self.setAntennaGain(self.antennaGain)
-        self.node.lastpos = 0, 0, 0
 
     def getCustomRate(self):
         modes = ['a', 'b', 'g', 'n', 'ac']

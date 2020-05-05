@@ -36,7 +36,7 @@ class Mac80211Hwsim(object):
         cmd = 'find /sys/kernel/debug/ieee80211 -name hwsim | cut -d/ -f 6 | sort'
         phys = self.get_intf_list(cmd)  # gets virtual and phy interfaces
         wlan_list = self.get_wlan_list(phys, **params)  # gets wlan list
-        self.assign_iface(node, phys, wlan_list, **params)
+        self.assign_iface(node, phys, wlan_list, (len(phys)-1), **params)
 
     def start(self, nodes, nradios, alt_module, rec_rssi, **params):
         """Starts environment
@@ -55,7 +55,7 @@ class Mac80211Hwsim(object):
         phys = self.get_intf_list(cmd)  # gets virtual and phy interfaces
         wlan_list = self.get_wlan_list(phys, **params)  # gets wlan list
         for node in nodes:
-            self.assign_iface(node, phys, wlan_list, **params)
+            self.assign_iface(node, phys, wlan_list, 0, **params)
 
     @staticmethod
     def create_static_radios(nradios, alt_module, modprobe):
@@ -94,6 +94,22 @@ class Mac80211Hwsim(object):
         self.configPhys(node)
 
     def create_hwsim(self, n):
+        # generate prefix
+        num = 0
+        numokay = False
+        self.prefix = ""
+        cmd = "find /sys/kernel/debug/ieee80211 -name hwsim | cut -d/ -f 6 | sort"
+        phys = subprocess.check_output(cmd, shell=True).decode('utf-8').split("\n")
+
+        while not numokay:
+            self.prefix = "mn%02ds" % num
+            numokay = True
+            for phy in phys:
+                if phy.startswith(self.prefix):
+                    num += 1
+                    numokay = False
+                    break
+
         p = subprocess.Popen(["hwsim_mgmt", "-c", "-n", self.prefix +
                               ("%02d" % n)], stdin=subprocess.PIPE,
                              stdout=subprocess.PIPE,
@@ -111,22 +127,6 @@ class Mac80211Hwsim(object):
             error("\nError: %s" % err_out)
 
     def __create_hwsim_mgmt_devices(self, nradios, nodes, **params):
-        # generate prefix
-        num = 0
-        numokay = False
-        self.prefix = ""
-        cmd = "find /sys/kernel/debug/ieee80211 -name hwsim | cut -d/ -f 6 | sort"
-        phys = subprocess.check_output(cmd, shell=True).decode('utf-8').split("\n")
-
-        while not numokay:
-            self.prefix = "mn%02ds" % num
-            numokay = True
-            for phy in phys:
-                if phy.startswith(self.prefix):
-                    num += 1
-                    numokay = False
-                    break
-
         if 'docker' in params:
             self.docker_config(nradios=nradios, nodes=nodes, num=num, **params)
         else:
@@ -207,7 +207,7 @@ class Mac80211Hwsim(object):
                 node.phyid.append(id)
                 id += 1
 
-    def assign_iface(self, node, phys, wlan_list, **params):
+    def assign_iface(self, node, phys, wlan_list, id, **params):
         """Assign virtual interfaces for nodes
         nodes: list of nodes
         """
@@ -228,7 +228,7 @@ class Mac80211Hwsim(object):
                             shell=True).decode('utf-8').split('\n')
                         debug('rfkill unblock %s\n' % rfkill[0])
                         os.system('rfkill unblock %s' % rfkill[0])
-                        os.system('iw phy %s set netns %s' % (phys[0], node.pid))
+                        os.system('iw phy %s set netns %s' % (phys[id], node.pid))
                     node.cmd('ip link set %s down' % wlan_list[0])
                     node.cmd('ip link set %s name %s'
                              % (wlan_list[0], node.params['wlan'][wlan]))

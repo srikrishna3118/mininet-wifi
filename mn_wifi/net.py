@@ -293,8 +293,12 @@ class Mininet_wifi(Mininet, Mininet_IoT):
                 intf.setMAC(intf.mac)
                 intf = node.wintfs[intf.id]
                 HostapdConfig(intf)
-            intf.sendIntfTowmediumd()
-        if self.draw:
+            if self.link == wmediumd:
+                intf.sendIntfTowmediumd()
+        if self.draw and hasattr(node, 'position'):
+            intf.setTxPower(intf.txpower)
+            intf.setAntennaGain(intf.antennaGain)
+            intf.node.lastpos = 0, 0, 0
             self.plot.instantiate_attrs(node)
 
     def addWlans(self, node):
