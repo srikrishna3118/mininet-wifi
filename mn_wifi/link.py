@@ -1381,7 +1381,7 @@ class wmediumd(object):
         self.configWmediumd(**kwargs)
 
     def configWmediumd(self, wlinks, fading_cof, noise_th, stations,
-                       aps, cars, ppm, maclist):
+                       aps, cars, ppm):
         "Configure wmediumd"
         intfrefs = []
         isnodeaps = []
@@ -1414,7 +1414,7 @@ class wmediumd(object):
             self.snr(wlinks)
         WStarter(intfrefs=intfrefs, links=self.links, pos=self.positions,
                  fading_cof=fading_cof, noise_th=noise_th, txpowers=self.txpowers,
-                 isnodeaps=isnodeaps, ppm=ppm, maclist=maclist)
+                 isnodeaps=isnodeaps, ppm=ppm)
 
     def interference(self, nodes):
         for node in nodes:

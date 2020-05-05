@@ -92,7 +92,6 @@ class Mininet_wifi(Mininet, Mininet_IoT):
         self.mode = mode
         self.channel = channel
         self.wmediumd_mode = wmediumd_mode
-        self.wmediumdMac = []
         self.aps = []
         self.cars = []
         self.stations = []
@@ -512,9 +511,6 @@ class Mininet_wifi(Mininet, Mininet_IoT):
     def setModule(self, moduleDir):
         "set an alternative module rather than mac80211_hwsim"
         self.alt_module = moduleDir
-
-    def addMacToWmediumd(self, mac=None):
-        self.wmediumdMac.append(mac)
 
     def do_association(self, intf, ap_intf):
         dist = intf.node.get_distance_to(ap_intf.node)
@@ -1239,8 +1235,7 @@ class Mininet_wifi(Mininet, Mininet_IoT):
     def start_wmediumd(self):
         wmediumd(wlinks=self.wlinks, fading_cof=self.fading_cof,
                  noise_th=self.noise_th, stations=self.stations,
-                 aps=self.aps, cars=self.cars, ppm=ppm,
-                 maclist=self.wmediumdMac)
+                 aps=self.aps, cars=self.cars, ppm=ppm)
 
     def configWmediumd(self):
         "Configure Wmediumd"
