@@ -162,6 +162,16 @@ class testWalkthrough(unittest.TestCase):
         p.expect(self.prompt)
         p.sendline('exit')
         p.wait()
+        p = pexpect.spawn('mn --wifi --link=wmediumd --position')
+        p.expect(self.prompt)
+        # test station IP
+        p.sendline("px net.addStation('sta3', position=\'10,10,0\')")
+        p.expect(self.prompt)
+        p.sendline('py sta3.position')
+        p.expect('[10.0, 10.0, 0.0]')
+        p.expect(self.prompt)
+        p.sendline('exit')
+        p.wait()
 
     def testSimpleHTTP(self):
         "Start an HTTP server on sta1 and wget from sta2"

@@ -281,7 +281,7 @@ class Mininet_wifi(Mininet, Mininet_IoT):
             nradios += len(node.params['wlan'])
         return nodes, nradios
 
-    def senf_intf_to_wmediumd(self, node):
+    def config_runtime_node(self, node):
         self.configNode(node)
         node.wmIfaces = []
         for intf in node.wintfs.values():
@@ -293,13 +293,17 @@ class Mininet_wifi(Mininet, Mininet_IoT):
                 intf.setMAC(intf.mac)
                 intf = node.wintfs[intf.id]
                 HostapdConfig(intf)
+            else:
+                intf.setMAC(intf.mac)
+                intf.setIP(intf.ip, intf.prefixLen)
             if self.link == wmediumd:
                 intf.sendIntfTowmediumd()
-        if self.draw and hasattr(node, 'position'):
+        if self.draw or hasattr(node, 'position'):
             intf.setTxPower(intf.txpower)
             intf.setAntennaGain(intf.antennaGain)
             intf.node.lastpos = 0, 0, 0
-            self.plot.instantiate_attrs(node)
+            if self.draw:
+                self.plot.instantiate_attrs(node)
 
     def addWlans(self, node):
         node.params['wlan'] = []
@@ -314,7 +318,7 @@ class Mininet_wifi(Mininet, Mininet_IoT):
         # creates hwsim interfaces on the fly
         if Mac80211Hwsim.hwsim_ids:
             Mac80211Hwsim(node=node, on_the_fly=True)
-            self.senf_intf_to_wmediumd(node)
+            self.config_runtime_node(node)
 
     def addStation(self, name, cls=None, **params):
         """Add Station.
@@ -336,7 +340,7 @@ class Mininet_wifi(Mininet, Mininet_IoT):
                    }
         defaults.update(params)
 
-        if self.autoSetPositions:
+        if self.autoSetPositions and 'position' not in params:
             defaults['position'] = [round(self.nextPos_sta, 2), 0, 0]
         if self.autoSetMacs:
             defaults['mac'] = macColonHex(self.nextIP)
