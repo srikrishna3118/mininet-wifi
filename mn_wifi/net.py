@@ -82,7 +82,6 @@ class Mininet_wifi(Mininet, Mininet_IoT):
            rec_rssi: sends rssi to mac80211_hwsim by using hwsim_mgmt
            json_file: json file dir - useful for P4
            ac_method: association control method"""
-
         self.station = station
         self.accessPoint = accessPoint
         self.car = car
@@ -282,6 +281,22 @@ class Mininet_wifi(Mininet, Mininet_IoT):
             nradios += len(node.params['wlan'])
         return nodes, nradios
 
+    def senf_intf_to_wmediumd(self, node):
+        self.configNode(node)
+        node.wmIfaces = []
+        for intf in node.wintfs.values():
+            intf.ipLink('up')
+            if isinstance(node, AP):
+                self.configMasterIntf(node, intf.id)
+                if not intf.mac:
+                    intf.mac = intf.getMAC()
+                intf.setMAC(intf.mac)
+                intf = node.wintfs[intf.id]
+                HostapdConfig(intf)
+            intf.sendIntfTowmediumd()
+        if self.draw:
+            self.plot.instantiate_attrs(node)
+
     def addWlans(self, node):
         node.params['wlan'] = []
         wlans = node.params.get('wlans', 1)
@@ -295,16 +310,7 @@ class Mininet_wifi(Mininet, Mininet_IoT):
         # creates hwsim interfaces on the fly
         if Mac80211Hwsim.hwsim_ids:
             Mac80211Hwsim(node=node, on_the_fly=True)
-            self.configNode(node)
-            for intf in node.wintfs.values():
-                intf.ipLink('up')
-                if isinstance(node, AP):
-                    self.configMasterIntf(node, intf.id)
-                    if not intf.mac:
-                        intf.mac = intf.getMAC()
-                    intf.setMAC(intf.mac)
-                    intf = node.wintfs[intf.id]
-                    HostapdConfig(intf)
+            self.senf_intf_to_wmediumd(node)
 
     def addStation(self, name, cls=None, **params):
         """Add Station.

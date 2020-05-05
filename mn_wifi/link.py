@@ -118,6 +118,21 @@ class IntfWireless(Intf):
         if wmediumd_mode.mode == w_cst.INTERFERENCE_MODE:
             w_server.update_txpower(w_txpower(self.wmIface, int(txpower)))
 
+    def setSNRWmediumd(self, ap_intf, snr):
+        "Send SNR to wmediumd"
+        w_server.send_snr_update(SNRLink(self.wmIface, ap_intf.wmIface, snr))
+        w_server.send_snr_update(SNRLink(ap_intf.wmIface, self.wmIface, snr))
+
+    def sendIntfTowmediumd(self):
+        "Dynamically sending nodes to wmediumd"
+        self.wmIface = DynamicIntfRef(self.node, intf=self.name)
+        self.node.wmIfaces.append(self.wmIface)
+        # register interface
+        w_server.register_interface(self.mac)
+        self.setTxPower(self.txpower)
+        self.setAntennaGain(self.antennaGain)
+        self.node.lastpos = 0, 0, 0
+
     def getCustomRate(self):
         modes = ['a', 'b', 'g', 'n', 'ac']
         rates = [11, 3, 11, 600, 1000]
@@ -323,11 +338,6 @@ class IntfWireless(Intf):
                                 % (ipstr,))
             self.ip6, self.prefixLen6 = ipstr, prefixLen6
             return self.ipAddr('%s/%s' % (ipstr, prefixLen6))
-
-    def setSNRWmediumd(self, ap_intf, snr):
-        "Send SNR to wmediumd"
-        w_server.send_snr_update(SNRLink(self.wmIface, ap_intf.wmIface, snr))
-        w_server.send_snr_update(SNRLink(ap_intf.wmIface, self.wmIface, snr))
 
     def disconnect(self):
         self.iwdev_pexec('{} disconnect'.format(self.name))
