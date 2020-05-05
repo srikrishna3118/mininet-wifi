@@ -55,7 +55,7 @@ class Mac80211Hwsim(object):
         phys = self.get_intf_list(cmd)  # gets virtual and phy interfaces
         wlan_list = self.get_wlan_list(phys, **params)  # gets wlan list
         for node in nodes:
-            self.assign_iface(node, phys, wlan_list, 0, **params)
+            self.assign_iface(node, phys, wlan_list, **params)
 
     @staticmethod
     def create_static_radios(nradios, alt_module, modprobe):
@@ -207,7 +207,7 @@ class Mac80211Hwsim(object):
                 node.phyid.append(id)
                 id += 1
 
-    def assign_iface(self, node, phys, wlan_list, id, **params):
+    def assign_iface(self, node, phys, wlan_list, id=0, **params):
         """Assign virtual interfaces for nodes
         nodes: list of nodes
         """
