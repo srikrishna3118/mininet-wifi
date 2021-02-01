@@ -505,6 +505,7 @@ class IntfWireless(Intf):
     def wpa(self, ap_intf):
         self.wpaFile(ap_intf)
         self.wpa_pexec()
+        self.setConnected(ap_intf)
 
     def update_client_params(self, ap_intf):
         self.freq = ap_intf.freq
@@ -515,6 +516,7 @@ class IntfWireless(Intf):
     def wep(self, ap_intf):
         passwd = self.passwd if self.passwd else ap_intf.passwd
         self.wep_connect(passwd, ap_intf)
+        self.setConnected(ap_intf)
 
     def setConnected(self, ap_intf):
         self.associatedTo = ap_intf
@@ -836,6 +838,8 @@ class HostapdConfig(IntfWireless):
 
         if intf.ht_capab: cmd += '\nht_capab=%s' % intf.ht_capab
         if intf.vht_capab: cmd += '\nvht_capab=%s' % intf.vht_capab
+        if intf.macaddr_acl: cmd += '\nmacaddr_acl=%s' % intf.macaddr_acl
+        if intf.ignore_broadcast_ssid: cmd += '\nignore_broadcast_ssid=%s' % intf.ignore_broadcast_ssid
         if intf.beacon_int: cmd += '\nbeacon_int=%s' % intf.beacon_int
         if intf.client_isolation: cmd += '\nap_isolate=1'
         if 'config' in intf.node.params:
@@ -1278,27 +1282,29 @@ class master(WirelessLink):
         self.vifaces = []
         self.associatedStations = []
         self.bssid_list = []
-        self.ifb = None
         self.auth_algs = None
         self.authmode = None
-        self.freq = None
         self.beacon_int = None
+        self.client_isolation = None
         self.config = None
         self.config_methods = None
         self.country_code = 'US'
+        self.device_type = None
         self.encrypt = None
+        self.freq = None
         self.ht_capab = None
-        self.vht_capab = None
+        self.ifb = None
         self.ieee80211r = None
-        self.client_isolation = None
+        self.ignore_broadcast_ssid = None
+        self.macaddr_acl = None
         self.mobility_domain = None
         self.passwd = None
-        self.shared_secret = None
-        self.wpa_key_mgmt = None
         self.rsn_pairwise = None
         self.radius_server = None
+        self.shared_secret = None
+        self.vht_capab = None
+        self.wpa_key_mgmt = None
         self.wps_state = None
-        self.device_type = None
         self.wpa_psk_file = None
         self.wep_key0 = None
         self.link = None
@@ -1569,6 +1575,8 @@ class LinkAttrs(WirelessLink):
         self.txpower = intf.txpower
         self.range = intf.range
         self.static_range = intf.static_range
+        self.consumption = 0.0
+        self.voltage = 10.0
 
     def check_channel_band(self, ht_cap):
         if '40' in ht_cap:
