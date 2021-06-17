@@ -163,6 +163,9 @@ class Node_wifi(Node):
     def setAntennaHeight(self, height, intf=None):
         self.getNameToWintf(intf).setAntennaHeight(height)
         self.update_graph()
+        
+    def getAntennaHeight(self, intf=None):
+        return self.getNameToWintf(intf).getAntennaHeight()
 
     def setChannel(self, channel, intf=None):
         self.getNameToWintf(intf).setChannel(channel)
@@ -181,6 +184,9 @@ class Node_wifi(Node):
                 txpower = 14 if isinstance(self, AP) else 20
             return txpower
 
+    def set_text(self, text):
+        self.plttxt.set_text(text)
+
     def set_text_pos(self, x, y):
         self.plttxt.xyann = (x, y)
 
@@ -194,10 +200,9 @@ class Node_wifi(Node):
         "Set Position for wmediumd"
         if self.lastpos != pos:
             self.lastpos = pos
-            for wmIface in self.wmIfaces:
-                inc = '%s' % float('0.' + str(self.wmIfaces.index(wmIface)))
+            for id, wmIface in enumerate(self.wmIfaces):
                 w_server.update_pos(w_pos(wmIface,
-                    [(float(pos[0])+float(inc)), float(pos[1]), float(pos[2])]))
+                    [(float(pos[0])+id), float(pos[1]), float(pos[2])]))
 
     def setPosition(self, pos):
         "Set Position"

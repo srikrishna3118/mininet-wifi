@@ -145,7 +145,7 @@ class IntfWireless(Intf):
         return self.node.pexec(self.get_wpa_cmd())
 
     def kill_hostapd_process(self):
-        info('\n')
+        #info('\n')
         pattern = "mn%d_%s.apconf" % (os.getpid(), self.name)
         while True:
             try:
@@ -182,15 +182,16 @@ class IntfWireless(Intf):
         "Dynamically sending nodes to wmediumd"
         self.wmIface = DynamicIntfRef(self.node, intf=self.name)
         self.node.wmIfaces.append(self.wmIface)
-        # register interface
         w_server.register_interface(self.mac)
 
     def getCustomRate(self):
-        mode_rate = {'a': 11, 'b': 3, 'g': 11, 'n': 600, 'n5': 600, 'ac': 1000, 'ax': 2000}
+        mode_rate = {'a': 11, 'b': 3, 'g': 11, 'n': 600, 'n5': 600,
+                     'ac': 1000, 'ax': 2000, 'ad': 1000}
         return mode_rate.get(self.mode)
 
     def getRate(self):
-        mode_rate = {'a': 54, 'b': 11, 'g': 54, 'n': 300, 'n5': 300, 'ac': 600, 'ax': 1200}
+        mode_rate = {'a': 54, 'b': 11, 'g': 54, 'n': 300, 'n5': 300,
+                     'ac': 600, 'ax': 1200, 'ad': 4600}
         return mode_rate.get(self.mode)
 
     def rec_rssi(self):
@@ -219,15 +220,8 @@ class IntfWireless(Intf):
                           153, 157, 161, 165, 169, 173, 177, 181,
                           185, 189, 193, 197, 201, 205, 209, 213,
                           217, 221, 225, 229, 233]
+        chan_list_60ghz = [1, 2, 3, 4]
 
-        freq_list_6ghz = [5.955, 5.975, 5.995, 6.015, 6.035, 6.055, 6.095,
-                          6.115, 6.135, 6.155, 6.175, 6.195, 6.215, 6.235,
-                          6.255, 6.275, 6.295, 6.315, 6.335, 6.375, 6.415,
-                          6.435, 6.455, 6.475, 6.495, 6.515, 6.535, 6.555,
-                          6.575, 6.595, 6.615, 6.635, 6.655, 6.675, 6.695,
-                          6.715, 6.735, 6.755, 6.775, 6.795, 6.815, 6.835,
-                          6.855, 6.875, 6.895, 6.915, 6.935, 6.955, 6.975,
-                          6.995, 7.015, 7.035, 7.055, 7.075, 7.095, 7.115]
         freq_list_2ghz = [2.412, 2.417, 2.422, 2.427, 2.432, 2.437,
                           2.442, 2.447, 2.452, 2.457, 2.462]
         freq_list_5ghz = [5.18, 5.2, 5.22, 5.24, 5.26, 5.28, 5.30, 5.32,
@@ -236,8 +230,17 @@ class IntfWireless(Intf):
                           5.805, 5.825, 5.845, 5.855, 5.86, 5.865, 5.87,
                           5.875, 5.88, 5.885, 5.89, 5.895, 5.9, 5.905,
                           5.91, 5.915, 5.92, 5.925]
-        all_chan = chan_list_2ghz + chan_list_5ghz + chan_list_6ghz
-        all_freq = freq_list_2ghz + freq_list_5ghz + freq_list_6ghz
+        freq_list_6ghz = [5.955, 5.975, 5.995, 6.015, 6.035, 6.055, 6.095,
+                          6.115, 6.135, 6.155, 6.175, 6.195, 6.215, 6.235,
+                          6.255, 6.275, 6.295, 6.315, 6.335, 6.375, 6.415,
+                          6.435, 6.455, 6.475, 6.495, 6.515, 6.535, 6.555,
+                          6.575, 6.595, 6.615, 6.635, 6.655, 6.675, 6.695,
+                          6.715, 6.735, 6.755, 6.775, 6.795, 6.815, 6.835,
+                          6.855, 6.875, 6.895, 6.915, 6.935, 6.955, 6.975,
+                          6.995, 7.015, 7.035, 7.055, 7.075, 7.095, 7.115]
+        freq_list_60ghz = [58.320, 60.480, 62.640, 64.800]
+        all_chan = chan_list_2ghz + chan_list_5ghz + chan_list_6ghz + chan_list_60ghz
+        all_freq = freq_list_2ghz + freq_list_5ghz + freq_list_6ghz + freq_list_60ghz
         if int(channel) in all_chan:
             idx = all_chan.index(int(channel))
             return all_freq[idx]
@@ -338,12 +341,13 @@ class IntfWireless(Intf):
         if self.txpower == 1:
             min_range = int(SetSignalRange(self).range)
             if self.range < min_range:
-                info("*** %s: the signal range should be "
-                     "changed to (at least) %sm\n" % (self.name, min_range))
-                info("*** >>> See https://mininet-wifi.github.io/faq/#q7 for more information\n")
+                info('*** {}: the signal range should be '
+                     'changed to (at least) {}m\n'.format(self.name, min_range))
+                info('*** >>> See https://mininet-wifi.github.io/faq/#q7 '
+                     'for more information\n')
         else:
-            info("*** %s: signal range of %sm requires tx power equal to %sdBm.\n"
-                 % (self.name, self.range, txpower))
+            info('*** {}: signal range of {}m requires tx power equals '
+                 'to {}dBm.\n'.format(self.name, self.range, (int(txpower)+1)))
 
     def setDefaultRange(self):
         if not self.static_range:
@@ -360,6 +364,9 @@ class IntfWireless(Intf):
         self.setDefaultRange()
         self.setHeightWmediumd(height)
         self.node.configLinks()
+    
+    def getAntennaHeight(self):
+        return self.antennaHeight
 
     def setRange(self, range):
         self.range = float(range)
@@ -396,7 +403,7 @@ class IntfWireless(Intf):
 
         intf.ssid = ssid
         for key, value in kwargs.items():
-            setattr(intf.node, key, value)
+            setattr(intf, key, value)
 
         if not intf.mac:
             intf.mac = intf.getMAC()
@@ -823,7 +830,8 @@ class HostapdConfig(IntfWireless):
     def setHostapdConfig(self, intf):
         "Set hostapd config"
         cmd = "echo \'"
-        args = ['max_num_sta', 'beacon_int', 'rsn_preauth']
+        args = ['max_num_sta', 'beacon_int', 'rsn_preauth',
+                'rts_threshold', 'fragm_threshold']
 
         cmd += 'interface=%s' % intf.node.params.get('phywlan', intf.name)
         cmd += '\ndriver=nl80211'
@@ -853,7 +861,7 @@ class HostapdConfig(IntfWireless):
                 cmd += "\nieee8021x=1"
                 cmd += "\nwpa_key_mgmt=WPA-EAP"
                 if intf.encrypt:
-                    cmd += "\nauth_algs=%s" % intf.auth_algs
+                    cmd += "\nauth_algs={}".format(intf.auth_algs)
                     cmd += "\nwpa=2"
                 cmd += '\neap_server=0'
                 cmd += '\neapol_version=2'
@@ -861,33 +869,34 @@ class HostapdConfig(IntfWireless):
                 if not intf.radius_server: intf.radius_server = '127.0.0.1'
                 cmd += "\nwpa_pairwise=TKIP CCMP"
                 cmd += "\neapol_key_index_workaround=0"
-                cmd += "\nown_ip_addr=%s" % intf.radius_server
-                cmd += "\nnas_identifier=%s.example.com" % intf.node.name
-                cmd += "\nauth_server_addr=%s" % intf.radius_server
+                cmd += "\nown_ip_addr={}".format(intf.radius_server)
+                cmd += "\nnas_identifier={}.example.com".format(intf.node.name)
+                cmd += "\nauth_server_addr={}".format(intf.radius_server)
                 cmd += "\nauth_server_port=1812"
                 if not intf.shared_secret: intf.shared_secret = 'secret'
-                cmd += "\nauth_server_shared_secret=%s" % intf.shared_secret
+                cmd += "\nauth_server_shared_secret={}".format(intf.shared_secret)
             else:
+                if intf.ieee80211w: cmd += "\nieee80211w={}".format(intf.ieee80211w)
                 if intf.encrypt:
                     if 'wpa' in intf.encrypt:
-                        cmd += "\nauth_algs=%s" % intf.auth_algs
+                        cmd += "\nauth_algs={}".format(intf.auth_algs)
                         cmd += "\nwpa=1" if intf.encrypt == 'wpa' else "\nwpa=2"
                         if intf.encrypt == 'wpa3':
                             cmd += "\nwpa_key_mgmt=WPA-PSK SAE"
                         else:
-                            cmd += "\nwpa_key_mgmt=%s" % intf.wpa_key_mgmt
-                        cmd += "\nwpa_pairwise=%s" % intf.rsn_pairwise
-                        cmd += "\nwpa_passphrase=%s" % intf.wpa_passphrase
+                            cmd += "\nwpa_key_mgmt={}".format(intf.wpa_key_mgmt)
+                        cmd += '\nwpa_pairwise={}'.format(intf.rsn_pairwise)
+                        cmd += '\nwpa_passphrase={}'.format(intf.wpa_passphrase)
                     elif intf.encrypt == 'wep':
-                        cmd += "\nauth_algs=%s" % intf.auth_algs
-                        cmd += "\nwep_default_key=%s" % 0
+                        cmd += "\nauth_algs={}".format(intf.auth_algs)
+                        cmd += '\nwep_default_key={}'.format(0)
                         cmd += self.verifyWepKey(intf.wep_key0)
 
                 if intf.wps_state:
-                    cmd += '\nwps_state=%s' % intf.wps_state
+                    cmd += '\nwps_state={}'.format(intf.wps_state)
                     cmd += '\neap_server=1'
                     if intf.config_methods:
-                        cmd += '\nconfig_methods=%s' % intf.config_methods
+                        cmd += '\nconfig_methods={}'.format(intf.config_methods)
                     else:
                         cmd += '\nconfig_methods=label display push_button keypad'
                     cmd += '\nwps_pin_requests=/var/run/hostapd.pin-req'
@@ -903,13 +912,12 @@ class HostapdConfig(IntfWireless):
 
                 if intf.ieee80211r:
                     if intf.mobility_domain:
-                        cmd += "\nmobility_domain=%s" % intf.mobility_domain
+                        cmd += '\nmobility_domain={}'.format(intf.mobility_domain)
                         # cmd += ("\nown_ip_addr=127.0.0.1")
-                        cmd += "\nnas_identifier=%s.example.com" \
-                               % intf.node.name
+                        cmd += '\nnas_identifier={}.example.com'.format(intf.node.name)
                         for apref in intf.bssid_list:
-                            cmd += '\nr0kh=%s r0kh-%s.example.com 000102030405060708090a0b0c0d0e0f' % (intf.mac, apref)
-                            cmd += '\nr1kh=%s %s 000102030405060708090a0b0c0d0e0f' % (intf.mac, intf.mac)
+                            cmd += '\nr0kh={} r0kh-{}.example.com 000102030405060708090a0b0c0d0e0f'.format(intf.mac, apref)
+                            cmd += '\nr1kh={} {} 000102030405060708090a0b0c0d0e0f'.format(intf.mac, intf.mac)
                         cmd += '\nrsn_preauth=1'
                         cmd += '\npmk_r1_push=1'
                         cmd += '\nft_over_ds=1'
@@ -920,7 +928,10 @@ class HostapdConfig(IntfWireless):
         "Check WEP key"
         len_list = [5, 10, 13, 16, 26, 32]
         if len(wep_key0) in len_list:
-            cmd = "\nwep_key0=%s" % wep_key0
+            if len(wep_key0) in [5, 13, 16]:
+                cmd = "\nwep_key0=\"%s\"" % wep_key0
+            else:
+                cmd = "\nwep_key0=%s" % wep_key0
         else:
             info("Warning! Wep Key length is wrong!\n")
             exit(1)
@@ -1295,6 +1306,7 @@ class master(WirelessLink):
         self.ht_capab = None
         self.ifb = None
         self.ieee80211r = None
+        self.ieee80211w = None
         self.ignore_broadcast_ssid = None
         self.macaddr_acl = None
         self.mobility_domain = None
@@ -1337,6 +1349,7 @@ class VirtualMaster(master):
         self.ht_capab = None
         self.vht_capab = None
         self.ieee80211r = None
+        self.ieee80211w = None
         self.client_isolation = None
         self.mobility_domain = None
         self.passwd = None
@@ -1377,6 +1390,7 @@ class phyAP(WirelessLink):
         self.ht_capab = None
         self.vht_capab = None
         self.ieee80211r = None
+        self.ieee80211w = None
         self.client_isolation = None
         self.mobility_domain = None
         self.passwd = None
@@ -1402,13 +1416,23 @@ class managed(WirelessLink):
         node.addWIntf(self, port=wlan)
         node.addWAttr(self, port=wlan)
         self.apsInRange = {}
-        self.ifb = None
-        self.active_scan = None
         self.associatedTo = None
         self.authmode = None
+        self.active_scan = None
+        self.beacon_int = None
+        self.client_isolation = None
         self.config = None
         self.encrypt = None
         self.freq_list = None
+        self.ieee80211w = None
+        self.ieee80211r = None
+        self.ifb = None
+        self.wps_state = None
+        self.ht_capab = None
+        self.vht_capab = None
+        self.macaddr_acl = None
+        self.params = {}
+        self.ignore_broadcast_ssid = None
         self.link = None
         self.passwd = None
         self.radius_identity = None
@@ -1853,14 +1877,30 @@ class mesh(LinkAttrs):
         node: name of the node
         self: custom association class/constructor
         params: parameters for node"""
+
+        phyWlan = 0
+        if 'vIface' in params:
+            phyWlan = int(intf[-1])
+            intf = intf[:-5] + 'mp' + str(phyWlan)
         intf = node.getNameToWintf(intf)
         wlan = node.params['wlan'].index(intf.name)
 
-        if isinstance(intf, master): intf.kill_hostapd_process()
+        if isinstance(intf, master):
+            intf.kill_hostapd_process()
+
+        if 'vIface' in params:
+            wlan += len(node.params['wlan'])
+        if isinstance(node, AP) and isinstance(intf, mesh):
+            wlan -= 1
 
         LinkAttrs.__init__(self, node, intf, wlan)
         iface = intf
-        self.name = '%s-mp%s' % (node, intf.name[-1:])
+
+        port = wlan + 1 if isinstance(node, AP) else wlan
+        if 'vIface' in params:
+            self.name = '{}-mp{}.{}'.format(node, phyWlan, port)
+        else:
+            self.name = '{}-mp{}'.format(node, port)
         self.associatedTo = 'mesh'
 
         # It takes default values if keys are not set
@@ -1873,41 +1913,49 @@ class mesh(LinkAttrs):
 
         self.check_channel_band(self.ht_cap)
 
-        if wmediumd_mode.mode:
+        if wlan > 0 and 'vIface' in params:
+            self.mac = intf.mac[:4] + str(wlan) + intf.mac[5:]
+            self.node.params['wlan'].append(self.name)
+            if wmediumd_mode.mode:
+                self.sendIntfTowmediumd()
+            # mp interface must be created before ethtool
+            self.iwdev_cmd(self.set_mesh_type(intf, phyWlan))
+        else:
             self.wmIface = DynamicIntfRef(node, intf=self.name)
-            node.wmIfaces[wlan] = self.wmIface
+            if wmediumd_mode.mode and wmediumd_mode.mode != w_cst.ERRPROB_MODE:
+                node.wmIfaces[wlan] = self.wmIface
+            self.node.cmd('ip link set %s down' % intf)
+            self.iwdev_cmd(self.set_mesh_type(intf, port))
 
-        port = wlan + 1 if isinstance(node, AP) else wlan
-
-        # mp interface must be created before ethtool
-        self.iwdev_cmd(self.set_mesh_type(intf))
         intf1 = WirelessLink(name=self.name, node=node,
                              link=self, port=port)
         intf2 = 'wifiMesh'
 
         node.addWAttr(self, port=wlan)
         self.setTxPower(self.txpower)
-        self.setMeshIface(wlan, iface)
+        if 'vIface' in params:
+            self.setMAC(self.mac)
+        else:
+            self.prepareMeshIface(wlan, iface)
         self.configureMesh()
 
-        if self.proto: manetProtocols(self, proto_args)
+        if self.proto:
+            manetProtocols(self, proto_args)
 
         # All we are is dust in the wind, and our two interfaces
         self.intf1, self.intf2 = intf1, intf2
 
-    def set_mesh_type(self, intf):
-        return '%s interface add %s type mp' % (intf.name, self.name)
+    def set_mesh_type(self, intf, phyWlan):
+        return '{}-wlan{} interface add {} type mp'.format(intf.node, phyWlan, self.name)
 
-    def setMeshIface(self, wlan, intf):
+    def prepareMeshIface(self, wlan, intf):
         if isinstance(intf, adhoc): self.set_dev_type('managed')
-        self.node.cmd('ip link set %s down' % intf)
 
         self.setMAC(intf.mac)
         self.node.params['wlan'][wlan] = self.name
 
         self.setMeshChannel(self.channel)
         self.setReg()
-        self.ipLink('up')
 
         if self.ip:
             self.setIP(self.ip, self.prefixLen)
